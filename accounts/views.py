@@ -84,13 +84,24 @@ from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-def create_admin(request):
-    if not User.objects.filter(username='admin').exists():
-        User.objects.create_superuser(
-            username='admin',
-            email='admin@gmail.com',
-            password='123456789'
-        )
-        return HttpResponse("Admin created")
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
 
-    return HttpResponse("Admin already exists")
+User = get_user_model()
+
+def create_admin(request):
+    user, created = User.objects.get_or_create(
+        username='admin',
+        defaults={
+            'email': 'admin@gmail.com'
+        }
+    )
+
+    user.is_staff = True
+    user.is_superuser = True
+    user.is_active = True
+
+    user.set_password('123456789')
+    user.save()
+
+    return HttpResponse("Admin fixed")
