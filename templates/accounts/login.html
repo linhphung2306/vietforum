@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}Đăng nhập — VietForum{% endblock %}
+{% block content %}
+<div style="min-height:60vh; display:flex; align-items:center; justify-content:center; padding:32px 0;">
+  <div style="width:100%; max-width:380px;">
+
+    <div style="text-align:center; margin-bottom:32px;">
+      <div class="gradient-brand" style="width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 4px 14px rgba(234,88,12,0.4);">
+        <svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+        </svg>
+      </div>
+      <h1 style="font-size:24px; font-weight:800; color:#111827; margin:0 0 4px;">Đăng nhập</h1>
+      <p style="font-size:14px; color:#6b7280; margin:0;">Chào mừng trở lại VietForum!</p>
+    </div>
+
+    <div class="card" style="padding:24px; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+      <form method="post" style="display:flex; flex-direction:column; gap:16px;">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px 16px; font-size:13px; color:#991b1b;">
+          Tên đăng nhập hoặc mật khẩu không đúng.
+        </div>
+        {% endif %}
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Tên đăng nhập</label>
+          <input type="text" name="username" autofocus placeholder="Nhập tên đăng nhập" autocomplete="username">
+        </div>
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Mật khẩu</label>
+          <input type="password" name="password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <div style="text-align:right; margin-top:-8px;">
+          <a href="/accounts/password-reset/" style="font-size:12px; color:#ea580c; text-decoration:none;">Quên mật khẩu?</a>
+        </div>
+        <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:10px; font-size:14px;">Đăng nhập</button>
+      </form>
+
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid #f3f4f6; text-align:center; font-size:13px; color:#6b7280;">
+        Chưa có tài khoản?
+        <a href="/accounts/register/" style="font-weight:600; color:#ea580c; text-decoration:none;">Đăng ký ngay</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

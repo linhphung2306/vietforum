@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% block title %}Quản lý người dùng — VietForum{% endblock %}
+{% block content %}
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+  <div>
+    <h1 style="font-size:22px; font-weight:800; color:#111827; margin:0 0 4px;">👥 Quản lý người dùng</h1>
+    <p style="font-size:13px; color:#9ca3af; margin:0;">Tổng: {{ users|length }} tài khoản</p>
+  </div>
+  <a href="/moderation/" class="btn-secondary" style="font-size:13px; text-decoration:none;">← Kiểm duyệt</a>
+</div>
+<div class="card" style="overflow:hidden;">
+  <div style="display:grid; grid-template-columns:1fr 160px 100px 90px 100px; gap:16px; padding:10px 16px; background:#f9fafb; border-bottom:1px solid #f3f4f6; font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">
+    <div>Người dùng</div>
+    <div>Email</div>
+    <div style="text-align:center;">Vai trò</div>
+    <div style="text-align:center;">Trạng thái</div>
+    <div style="text-align:center;">Hành động</div>
+  </div>
+  {% for u in users %}
+  <div style="display:grid; grid-template-columns:1fr 160px 100px 90px 100px; gap:16px; padding:14px 16px; border-bottom:1px solid #f9fafb; align-items:center;">
+    <div>
+      <div style="font-weight:600; font-size:14px; color:#111827;">{{ u.display_name|default:u.username }}</div>
+      <div style="font-size:12px; color:#9ca3af;">@{{ u.username }} · Tham gia {{ u.date_joined|date:"d/m/Y" }}</div>
+    </div>
+    <div style="font-size:12px; color:#6b7280; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ u.email }}</div>
+    <div style="text-align:center;">
+      {% if u.role == 'admin' %}<span class="badge-admin">Admin</span>
+      {% elif u.role == 'moderator' %}<span class="badge-mod">Mod</span>
+      {% else %}<span class="badge-user">Thành viên</span>{% endif %}
+    </div>
+    <div style="text-align:center;">
+      {% if u.is_active %}
+      <span style="font-size:11px; font-weight:600; color:#16a34a; background:#f0fdf4; padding:2px 8px; border-radius:4px;">Hoạt động</span>
+      {% else %}
+      <span style="font-size:11px; font-weight:600; color:#dc2626; background:#fef2f2; padding:2px 8px; border-radius:4px;">Đã khóa</span>
+      {% endif %}
+    </div>
+    <div style="text-align:center;">
+      {% if u != request.user %}
+      <a href="/moderation/ban/{{ u.id }}/" style="font-size:12px; font-weight:600; text-decoration:none; {% if u.is_active %}color:#d97706;{% else %}color:#16a34a;{% endif %}">
+        {% if u.is_active %}🚫 Khóa{% else %}✅ Mở khóa{% endif %}
+      </a>
+      {% else %}
+      <span style="font-size:12px; color:#d1d5db;">—</span>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+{% endblock %}

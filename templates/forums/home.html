@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% block title %}VietForum — Trang chủ{% endblock %}
+{% block content %}
+
+<!-- HERO -->
+<div class="gradient-brand" style="border-radius:16px; padding:40px 32px; color:white; margin-bottom:32px; position:relative; overflow:hidden;">
+  <div style="position:absolute; inset:0; opacity:0.08; background-image:radial-gradient(circle, white 1px, transparent 1px); background-size:32px 32px;"></div>
+  <div style="position:relative;">
+    <h1 style="font-size:28px; font-weight:800; margin:0 0 8px;">Chào mừng đến VietForum 👋</h1>
+    <p style="color:#fed7aa; font-size:14px; margin:0 0 24px;">Nơi chia sẻ kiến thức, thảo luận và kết nối cộng đồng học thuật Việt Nam.</p>
+    <div style="display:flex; gap:32px;">
+      <div style="text-align:center;">
+        <div style="font-size:26px; font-weight:900;">{{ stats.total_users }}</div>
+        <div style="font-size:12px; color:#fed7aa; margin-top:2px;">Thành viên</div>
+      </div>
+      <div style="width:1px; background:rgba(255,255,255,0.2);"></div>
+      <div style="text-align:center;">
+        <div style="font-size:26px; font-weight:900;">{{ stats.total_topics }}</div>
+        <div style="font-size:12px; color:#fed7aa; margin-top:2px;">Chủ đề</div>
+      </div>
+      <div style="width:1px; background:rgba(255,255,255,0.2);"></div>
+      <div style="text-align:center;">
+        <div style="font-size:26px; font-weight:900;">{{ stats.total_forums }}</div>
+        <div style="font-size:12px; color:#fed7aa; margin-top:2px;">Chuyên mục</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- NỘI DUNG CHÍNH -->
+<div style="display:grid; grid-template-columns:1fr 300px; gap:24px;">
+
+  <!-- DANH SÁCH CHUYÊN MỤC -->
+  <div>
+    <h2 style="font-size:15px; font-weight:700; color:#111827; margin:0 0 16px;">Chuyên mục thảo luận</h2>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      {% for forum in forums %}
+      <a href="/forum/{{ forum.id }}/" style="text-decoration:none;">
+        <div class="card" style="display:flex; align-items:center; gap:16px; padding:16px; transition:all 0.15s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#fed7aa';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'; this.style.borderColor='#f3f4f6';">
+          <div class="gradient-brand" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+            </svg>
+          </div>
+          <div style="flex:1; min-width:0;">
+            <div style="font-weight:600; color:#111827; font-size:15px;">{{ forum.forum_name }}</div>
+            {% if forum.description %}
+            <div style="font-size:13px; color:#6b7280; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ forum.description }}</div>
+            {% endif %}
+          </div>
+          <div style="text-align:right; flex-shrink:0;">
+            <div style="font-size:20px; font-weight:800; color:#ea580c;">{{ forum.topic_count }}</div>
+            <div style="font-size:12px; color:#9ca3af;">chủ đề</div>
+          </div>
+        </div>
+      </a>
+      {% empty %}
+      <div class="card" style="padding:40px; text-align:center; color:#9ca3af; font-size:14px;">
+        Chưa có chuyên mục nào. Quản trị viên hãy tạo chuyên mục đầu tiên!
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- SIDEBAR -->
+  <div style="display:flex; flex-direction:column; gap:16px;">
+
+    <!-- Bài nổi bật -->
+    <div class="card" style="padding:16px;">
+      <h3 style="font-size:13px; font-weight:700; color:#111827; margin:0 0 12px; display:flex; align-items:center; gap:6px;">
+        ⭐ Chủ đề nổi bật
+      </h3>
+      {% for topic in hot_topics %}
+      <a href="/topic/{{ topic.id }}/" style="text-decoration:none; display:block;">
+        <div style="padding:8px 0; {% if not forloop.last %}border-bottom:1px solid #f9fafb;{% endif %}">
+          <div style="font-size:13px; font-weight:500; color:#374151; line-height:1.4; overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">{{ topic.title }}</div>
+          <div style="font-size:11px; color:#9ca3af; margin-top:4px;">{{ topic.forum.forum_name }} · {{ topic.view_count }} xem</div>
+        </div>
+      </a>
+      {% empty %}
+      <p style="font-size:13px; color:#9ca3af;">Chưa có chủ đề nào.</p>
+      {% endfor %}
+    </div>
+   {% if user.is_authenticated and user.is_admin_role %}
+<div class="card" style="padding:16px; background:#f0fdf4; border-color:#bbf7d0;">
+  <h3 style="font-size:13px; font-weight:700; color:#166534; margin:0 0 8px;">⚙ Quản trị</h3>
+  <a href="/forum/create/" class="btn-primary" style="width:100%; justify-content:center; font-size:13px; text-decoration:none; background:linear-gradient(135deg,#16a34a,#15803d); display:flex;">+ Tạo chuyên mục</a>
+</div>
+{% endif %}
+
+    <!-- CTA đăng ký -->
+    {% if not user.is_authenticated %}
+    <div class="card" style="padding:16px; background:#fff7ed; border-color:#fed7aa;">
+      <h3 style="font-size:13px; font-weight:700; color:#c2410c; margin:0 0 8px;">Tham gia cộng đồng</h3>
+      <p style="font-size:12px; color:#ea580c; margin:0 0 12px; line-height:1.5;">Đăng ký miễn phí để tạo chủ đề và tương tác.</p>
+      <a href="/accounts/register/" class="btn-primary" style="width:100%; justify-content:center; font-size:13px; text-decoration:none;">Đăng ký ngay</a>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Tạo chuyên mục — VietForum{% endblock %}
+{% block content %}
+<div style="max-width:480px; margin:0 auto;">
+  <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#9ca3af; margin-bottom:20px;">
+    <a href="/" style="color:#9ca3af; text-decoration:none;">Trang chủ</a> ›
+    <span style="color:#374151;">Tạo chuyên mục</span>
+  </div>
+  <div class="card" style="padding:28px; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+    <h1 style="font-size:20px; font-weight:800; color:#111827; margin:0 0 24px;">Tạo chuyên mục mới</h1>
+    <form method="post" style="display:flex; flex-direction:column; gap:16px;">
+      {% csrf_token %}
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Tên chuyên mục <span style="color:#ef4444;">*</span></label>
+        <input type="text" name="forum_name" placeholder="Tên chuyên mục..." required>
+      </div>
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Mô tả</label>
+        <textarea name="description" rows="3" placeholder="Mô tả ngắn về chuyên mục..."></textarea>
+      </div>
+      <div style="display:flex; gap:12px;">
+        <button type="submit" class="btn-primary" style="flex:1; justify-content:center; padding:10px;">Tạo chuyên mục</button>
+        <a href="/" class="btn-secondary" style="flex:1; justify-content:center; padding:10px; text-decoration:none;">Hủy</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

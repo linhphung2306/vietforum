@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+{% block title %}Đăng ký — VietForum{% endblock %}
+{% block content %}
+<div style="min-height:60vh; display:flex; align-items:center; justify-content:center; padding:32px 0;">
+  <div style="width:100%; max-width:420px;">
+
+    <div style="text-align:center; margin-bottom:32px;">
+      <div class="gradient-brand" style="width:56px; height:56px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; box-shadow:0 4px 14px rgba(234,88,12,0.4);">
+        <svg width="28" height="28" fill="none" stroke="white" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+        </svg>
+      </div>
+      <h1 style="font-size:24px; font-weight:800; color:#111827; margin:0 0 4px;">Tạo tài khoản</h1>
+      <p style="font-size:14px; color:#6b7280; margin:0;">Tham gia cộng đồng VietForum</p>
+    </div>
+
+    <div class="card" style="padding:24px; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+      <form method="post" style="display:flex; flex-direction:column; gap:16px;">
+        {% csrf_token %}
+        {% if form.non_field_errors %}
+        <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:12px; font-size:13px; color:#991b1b;">{{ form.non_field_errors }}</div>
+        {% endif %}
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Tên đăng nhập <span style="color:#ef4444;">*</span></label>
+          <input type="text" name="username" value="{{ form.username.value|default:'' }}" placeholder="vd: nguyen_van_a">
+          {% if form.username.errors %}<p style="font-size:12px; color:#ef4444; margin-top:4px;">{{ form.username.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Tên hiển thị</label>
+          <input type="text" name="display_name" value="{{ form.display_name.value|default:'' }}" placeholder="Tên sẽ hiện trên diễn đàn">
+        </div>
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Email <span style="color:#ef4444;">*</span></label>
+          <input type="email" name="email" value="{{ form.email.value|default:'' }}" placeholder="email@example.com">
+          {% if form.email.errors %}<p style="font-size:12px; color:#ef4444; margin-top:4px;">{{ form.email.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Mật khẩu <span style="color:#ef4444;">*</span></label>
+          <input type="password" name="password1" placeholder="Ít nhất 8 ký tự">
+          {% if form.password1.errors %}<p style="font-size:12px; color:#ef4444; margin-top:4px;">{{ form.password1.errors.0 }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Xác nhận mật khẩu <span style="color:#ef4444;">*</span></label>
+          <input type="password" name="password2" placeholder="Nhập lại mật khẩu">
+          {% if form.password2.errors %}<p style="font-size:12px; color:#ef4444; margin-top:4px;">{{ form.password2.errors.0 }}</p>{% endif %}
+        </div>
+
+        <button type="submit" class="btn-primary" style="width:100%; justify-content:center; padding:10px; font-size:14px; margin-top:4px;">Tạo tài khoản</button>
+      </form>
+
+      <div style="margin-top:20px; padding-top:20px; border-top:1px solid #f3f4f6; text-align:center; font-size:13px; color:#6b7280;">
+        Đã có tài khoản? <a href="/accounts/login/" style="font-weight:600; color:#ea580c; text-decoration:none;">Đăng nhập</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

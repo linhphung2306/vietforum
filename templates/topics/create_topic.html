@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% block title %}Tạo chủ đề — VietForum{% endblock %}
+{% block content %}
+<div style="max-width:680px; margin:0 auto;">
+  <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#9ca3af; margin-bottom:20px;">
+    <a href="/" style="color:#9ca3af; text-decoration:none;">Trang chủ</a> ›
+    <a href="/forum/{{ forum.id }}/" style="color:#9ca3af; text-decoration:none;">{{ forum.forum_name }}</a> ›
+    <span style="color:#374151;">Tạo chủ đề</span>
+  </div>
+
+  <div class="card" style="padding:28px; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+    <h1 style="font-size:20px; font-weight:800; color:#111827; margin:0 0 4px;">Tạo chủ đề mới</h1>
+    <p style="font-size:13px; color:#9ca3af; margin:0 0 24px;">Đăng trong: <span style="color:#ea580c; font-weight:600;">{{ forum.forum_name }}</span></p>
+
+    <form method="post" style="display:flex; flex-direction:column; gap:16px;">
+      {% csrf_token %}
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Tiêu đề <span style="color:#ef4444;">*</span> <span style="font-weight:400; color:#9ca3af;">(10–255 ký tự)</span></label>
+        <input type="text" name="title" value="{{ form.title.value|default:'' }}" placeholder="Nhập tiêu đề chủ đề..." maxlength="255">
+        {% if form.title.errors %}<p style="font-size:12px; color:#ef4444; margin-top:4px;">{{ form.title.errors.0 }}</p>{% endif %}
+      </div>
+      <div>
+        <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Nội dung <span style="color:#ef4444;">*</span> <span style="font-weight:400; color:#9ca3af;">(tối thiểu 20 ký tự)</span></label>
+        <textarea name="content" rows="10" id="content-area" placeholder="Trình bày nội dung...">{{ form.content.value|default:'' }}</textarea>
+        {% if form.content.errors %}<p style="font-size:12px; color:#ef4444; margin-top:4px;">{{ form.content.errors.0 }}</p>{% endif %}
+        <p id="char-count" style="font-size:12px; color:#9ca3af; margin-top:4px;">0 ký tự</p>
+      </div>
+      <div style="display:flex; gap:12px; padding-top:8px;">
+        <button type="submit" class="btn-primary" style="flex:1; justify-content:center; padding:10px;">🚀 Đăng chủ đề</button>
+        <a href="/forum/{{ forum.id }}/" class="btn-secondary" style="flex:1; justify-content:center; padding:10px; text-decoration:none;">Hủy</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_scripts %}
+<script>
+const ta = document.getElementById('content-area');
+const cc = document.getElementById('char-count');
+if (ta && cc) {
+  ta.addEventListener('input', () => {
+    const n = ta.value.length;
+    cc.textContent = `${n} ký tự`;
+    cc.style.color = n < 20 ? '#ef4444' : '#9ca3af';
+  });
+}
+</script>
+{% endblock %}

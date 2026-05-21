@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% block title %}{{ forum.forum_name }} — VietForum{% endblock %}
+{% block content %}
+
+<div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#9ca3af; margin-bottom:20px;">
+  <a href="/" style="color:#9ca3af; text-decoration:none;">Trang chủ</a> ›
+  <span style="color:#374151; font-weight:500;">{{ forum.forum_name }}</span>
+</div>
+
+<div class="card" style="padding:20px; margin-bottom:20px; display:flex; align-items:center; gap:16px; border-left:4px solid #ea580c;">
+  <div class="gradient-brand" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+    <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+    </svg>
+  </div>
+  <div style="flex:1;">
+    <h1 style="font-size:20px; font-weight:800; color:#111827; margin:0 0 4px;">{{ forum.forum_name }}</h1>
+    {% if forum.description %}<p style="font-size:13px; color:#6b7280; margin:0;">{{ forum.description }}</p>{% endif %}
+  </div>
+  {% if user.is_authenticated %}
+  <a href="/topic/create/{{ forum.id }}/" class="btn-primary" style="text-decoration:none; flex-shrink:0;">+ Tạo chủ đề</a>
+  {% endif %}
+</div>
+
+<div class="card" style="overflow:hidden;">
+  <div style="display:grid; grid-template-columns:1fr 120px 80px 100px; gap:16px; padding:10px 16px; background:#f9fafb; border-bottom:1px solid #f3f4f6; font-size:11px; font-weight:600; color:#9ca3af; text-transform:uppercase; letter-spacing:0.05em;">
+    <div>Chủ đề</div>
+    <div style="text-align:center;">Tác giả</div>
+    <div style="text-align:center;">Lượt xem</div>
+    <div style="text-align:center;">Ngày đăng</div>
+  </div>
+
+  {% for topic in page %}
+  <div style="display:grid; grid-template-columns:1fr 120px 80px 100px; gap:16px; padding:14px 16px; border-bottom:1px solid #f9fafb; align-items:center; {% if topic.is_pinned %}background:#fff7ed; border-left:3px solid #ea580c;{% endif %}">
+
+    <div style="display:flex; align-items:center; gap:8px; min-width:0;">
+      {% if topic.is_pinned %}<span style="color:#ea580c; font-size:13px; flex-shrink:0;">📌</span>{% endif %}
+      {% if topic.is_locked %}<span style="color:#9ca3af; font-size:13px; flex-shrink:0;">🔒</span>{% endif %}
+      <div style="min-width:0; flex:1;">
+        <a href="/topic/{{ topic.id }}/" style="text-decoration:none;">
+          <div style="font-weight:600; color:#111827; font-size:14px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ topic.title }}</div>
+          <div style="font-size:12px; color:#9ca3af; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ topic.content|truncatechars:80 }}</div>
+        </a>
+      </div>
+      {% if user.is_authenticated and user.is_mod_or_admin %}
+      <a href="/topic/pin/{{ topic.id }}/" style="font-size:13px; color:{% if topic.is_pinned %}#ea580c{% else %}#d1d5db{% endif %}; text-decoration:none; flex-shrink:0;" title="{% if topic.is_pinned %}Bỏ ghim{% else %}Ghim{% endif %}">📌</a>
+      {% endif %}
+    </div>
+
+    <div style="text-align:center; font-size:13px; color:#6b7280;">{{ topic.author.display_name|default:topic.author.username|default:"[đã xóa]" }}</div>
+    <div style="text-align:center; font-size:13px; font-weight:600; color:#374151;">{{ topic.view_count }}</div>
+    <div style="text-align:center; font-size:12px; color:#9ca3af;">{{ topic.created_at|date:"d/m/Y" }}</div>
+
+  </div>
+  {% empty %}
+  <div style="padding:48px; text-align:center; color:#9ca3af; font-size:14px;">
+    Chưa có chủ đề nào.
+    {% if user.is_authenticated %}<br><a href="/topic/create/{{ forum.id }}/" style="color:#ea580c; font-weight:600;">Tạo chủ đề đầu tiên</a>{% endif %}
+  </div>
+  {% endfor %}
+</div>
+
+{% if page.has_other_pages %}
+<div style="display:flex; align-items:center; justify-content:center; gap:8px; margin-top:20px;">
+  {% if page.has_previous %}<a href="?page={{ page.previous_page_number }}" class="btn-secondary" style="font-size:13px; padding:6px 14px; text-decoration:none;">← Trước</a>{% endif %}
+  <span style="font-size:14px; color:#6b7280;">Trang {{ page.number }} / {{ page.paginator.num_pages }}</span>
+  {% if page.has_next %}<a href="?page={{ page.next_page_number }}" class="btn-secondary" style="font-size:13px; padding:6px 14px; text-decoration:none;">Sau →</a>{% endif %}
+</div>
+{% endif %}
+{% endblock %}
