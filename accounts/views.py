@@ -79,3 +79,18 @@ def manage_users(request):
         return redirect('accounts:manage_users')
 
     return render(request, 'accounts/manage_users.html', {'users': users})
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+def create_admin(request):
+    if not User.objects.filter(username='admin').exists():
+        User.objects.create_superuser(
+            username='admin',
+            email='admin@gmail.com',
+            password='123456789'
+        )
+        return HttpResponse("Admin created")
+
+    return HttpResponse("Admin already exists")
