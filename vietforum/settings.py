@@ -1,4 +1,3 @@
-```python
 import os
 from pathlib import Path
 import os
@@ -54,7 +53,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'vietforum.wsgi.application'
-
 import dj_database_url
 
 DATABASES = {
