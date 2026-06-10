@@ -87,7 +87,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Email SendGrid
 EMAIL_BACKEND                  = 'sendgrid_backend.SendgridBackend'
 SENDGRID_API_KEY               = os.environ.get('SENDGRID_API_KEY')
-DEFAULT_FROM_EMAIL             = 'linhphung2310@gmail.com'
+DEFAULT_FROM_EMAIL             = 'linhphung2306@gmail.com'
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
