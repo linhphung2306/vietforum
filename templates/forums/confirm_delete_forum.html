@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Xóa chuyên mục — VietForum{% endblock %}
+{% block content %}
+<div style="max-width:480px; margin:0 auto;">
+  <div style="display:flex; align-items:center; gap:8px; font-size:13px; color:#9ca3af; margin-bottom:20px;">
+    <a href="/" style="color:#9ca3af; text-decoration:none;">Trang chủ</a> ›
+    <span style="color:#374151;">Xóa chuyên mục</span>
+  </div>
+  <div class="card" style="padding:28px; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+    <h1 style="font-size:20px; font-weight:800; color:#111827; margin:0 0 12px;">Xác nhận xóa</h1>
+    <p style="font-size:14px; color:#374151; margin:0 0 8px;">
+      Bạn có chắc muốn xóa chuyên mục <strong>{{ forum.forum_name }}</strong>?
+    </p>
+    <p style="font-size:13px; color:#dc2626; margin:0 0 24px;">
+      ⚠️ Tất cả chủ đề bên trong cũng sẽ bị xóa vĩnh viễn.
+    </p>
+    <form method="post" style="display:flex; gap:12px;">
+      {% csrf_token %}
+      <button type="submit" style="flex:1; padding:10px; background:#dc2626; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">
+        Xóa
+      </button>
+      <a href="/" style="flex:1; padding:10px; text-align:center; background:#f3f4f6; color:#374151; border-radius:8px; font-weight:600; text-decoration:none;">
+        Hủy
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

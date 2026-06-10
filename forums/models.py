@@ -1,25 +1,21 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.conf import settings
 
 class Forum(models.Model):
     forum_name  = models.CharField(max_length=100, verbose_name='Tên chuyên mục')
-    description = models.TextField(null=True, blank=True,
-                                   verbose_name='Mô tả')
+    description = models.TextField(null=True, blank=True, verbose_name='Mô tả')
     icon_url    = models.CharField(max_length=255, null=True, blank=True,
                                    verbose_name='Biểu tượng (CSS class hoặc URL)')
     created_by  = models.ForeignKey(
                     settings.AUTH_USER_MODEL,
-                    on_delete=models.SET_NULL,   # bảng 2.9: SET NULL
+                    on_delete=models.SET_NULL,
                     null=True, blank=True,
                     related_name='created_forums',
                     verbose_name='Người tạo')
     created_at  = models.DateTimeField(auto_now_add=True)
-    is_active   = models.BooleanField(default=True,  # bảng 2.4
-                                      verbose_name='Đang hoạt động')
-    
+    is_active   = models.BooleanField(default=True, verbose_name='Đang hoạt động')
+    is_approved = models.BooleanField(default=False, verbose_name='Đã duyệt')
+
     class Meta:
         verbose_name        = 'Chuyên mục'
         verbose_name_plural = 'Chuyên mục'

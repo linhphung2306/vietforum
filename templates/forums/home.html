@@ -32,31 +32,47 @@
 
   <!-- DANH SÁCH CHUYÊN MỤC -->
   <div>
-    <h2 style="font-size:15px; font-weight:700; color:#111827; margin:0 0 16px;">Chuyên mục thảo luận</h2>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
+      <h2 style="font-size:15px; font-weight:700; color:#111827; margin:0;">Chuyên mục thảo luận</h2>
+      {% if user.is_authenticated %}
+      <a href="/forum/create/" class="btn-primary" style="font-size:12px; padding:6px 14px; text-decoration:none;">+ Tạo chuyên mục</a>
+      {% endif %}
+    </div>
     <div style="display:flex; flex-direction:column; gap:12px;">
       {% for forum in forums %}
-      <a href="/forum/{{ forum.id }}/" style="text-decoration:none;">
-        <div class="card" style="display:flex; align-items:center; gap:16px; padding:16px; transition:all 0.15s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#fed7aa';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'; this.style.borderColor='#f3f4f6';">
-          <div class="gradient-brand" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-            <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
-            </svg>
+      <div style="position:relative;">
+        <a href="/forum/{{ forum.id }}/" style="text-decoration:none;">
+          <div class="card" style="display:flex; align-items:center; gap:16px; padding:16px; transition:all 0.15s;" onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='#fed7aa';" onmouseout="this.style.boxShadow='0 1px 3px rgba(0,0,0,0.06)'; this.style.borderColor='#f3f4f6';">
+            <div class="gradient-brand" style="width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+              <svg width="24" height="24" fill="none" stroke="white" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"/>
+              </svg>
+            </div>
+            <div style="flex:1; min-width:0;">
+              <div style="font-weight:600; color:#111827; font-size:15px;">{{ forum.forum_name }}</div>
+              {% if forum.description %}
+              <div style="font-size:13px; color:#6b7280; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ forum.description }}</div>
+              {% endif %}
+            </div>
+            <div style="text-align:right; flex-shrink:0;">
+              <div style="font-size:20px; font-weight:800; color:#ea580c;">{{ forum.topic_count }}</div>
+              <div style="font-size:12px; color:#9ca3af;">chủ đề</div>
+            </div>
           </div>
-          <div style="flex:1; min-width:0;">
-            <div style="font-weight:600; color:#111827; font-size:15px;">{{ forum.forum_name }}</div>
-            {% if forum.description %}
-            <div style="font-size:13px; color:#6b7280; margin-top:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">{{ forum.description }}</div>
-            {% endif %}
-          </div>
-          <div style="text-align:right; flex-shrink:0;">
-            <div style="font-size:20px; font-weight:800; color:#ea580c;">{{ forum.topic_count }}</div>
-            <div style="font-size:12px; color:#9ca3af;">chủ đề</div>
-          </div>
-        </div>
-      </a>
+        </a>
+        {% if user.is_staff %}
+        <form method="post" action="/forum/{{ forum.id }}/delete/" style="position:absolute; top:12px; right:12px;" onsubmit="return confirm('Xóa chuyên mục "{{ forum.forum_name }}"? Tất cả chủ đề bên trong cũng sẽ bị xóa.');">
+          {% csrf_token %}
+          <button type="submit" style="background:#fee2e2; border:none; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:600; color:#dc2626; cursor:pointer;">Xóa</button>
+        </form>
+        {% endif %}
+      </div>
       {% empty %}
       <div class="card" style="padding:40px; text-align:center; color:#9ca3af; font-size:14px;">
-        Chưa có chuyên mục nào. Quản trị viên hãy tạo chuyên mục đầu tiên!
+        Chưa có chuyên mục nào.
+        {% if user.is_authenticated %}
+        <a href="/forum/create/" style="color:#ea580c; text-decoration:none; font-weight:600;"> Tạo chuyên mục đầu tiên!</a>
+        {% endif %}
       </div>
       {% endfor %}
     </div>
@@ -81,12 +97,15 @@
       <p style="font-size:13px; color:#9ca3af;">Chưa có chủ đề nào.</p>
       {% endfor %}
     </div>
-   {% if user.is_authenticated and user.is_admin_role %}
-<div class="card" style="padding:16px; background:#f0fdf4; border-color:#bbf7d0;">
-  <h3 style="font-size:13px; font-weight:700; color:#166534; margin:0 0 8px;">⚙ Quản trị</h3>
-  <a href="/forum/create/" class="btn-primary" style="width:100%; justify-content:center; font-size:13px; text-decoration:none; background:linear-gradient(135deg,#16a34a,#15803d); display:flex;">+ Tạo chuyên mục</a>
-</div>
-{% endif %}
+
+    <!-- Quản trị: chờ duyệt (chỉ admin) -->
+    {% if user.is_staff %}
+    <div class="card" style="padding:16px; background:#f0fdf4; border-color:#bbf7d0;">
+      <h3 style="font-size:13px; font-weight:700; color:#166534; margin:0 0 8px;">⚙ Quản trị</h3>
+      <a href="/forum/create/" class="btn-primary" style="width:100%; justify-content:center; font-size:13px; text-decoration:none; background:linear-gradient(135deg,#16a34a,#15803d); display:flex; margin-bottom:8px;">+ Tạo chuyên mục</a>
+      <a href="/forum/pending/" style="width:100%; justify-content:center; font-size:13px; text-decoration:none; color:#166534; background:#dcfce7; border:1px solid #bbf7d0; border-radius:8px; padding:7px 0; display:flex; font-weight:600;">🕐 Chờ duyệt</a>
+    </div>
+    {% endif %}
 
     <!-- CTA đăng ký -->
     {% if not user.is_authenticated %}
@@ -96,7 +115,7 @@
       <a href="/accounts/register/" class="btn-primary" style="width:100%; justify-content:center; font-size:13px; text-decoration:none;">Đăng ký ngay</a>
     </div>
     {% endif %}
-  </div>
 
+  </div>
 </div>
 {% endblock %}
