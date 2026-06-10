@@ -84,15 +84,11 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
 MEDIA_URL  = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Email SMTP Gmail
-EMAIL_BACKEND       = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST          = 'smtp.gmail.com'
-EMAIL_PORT          = 465
-EMAIL_USE_SSL       = True
-EMAIL_USE_TLS       = False
-EMAIL_HOST_USER     = os.environ.get('EMAIL_HOST_USER')
-EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD')
-DEFAULT_FROM_EMAIL  = os.environ.get('EMAIL_HOST_USER')
+# Email SendGrid
+EMAIL_BACKEND                  = 'sendgrid_backend.SendgridBackend'
+SENDGRID_API_KEY               = os.environ.get('SENDGRID_API_KEY')
+DEFAULT_FROM_EMAIL             = 'linhphung2310@gmail.com'
+SENDGRID_SANDBOX_MODE_IN_DEBUG = False
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CSRF_TRUSTED_ORIGINS = [
