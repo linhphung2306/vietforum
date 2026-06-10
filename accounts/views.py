@@ -1,13 +1,13 @@
-from django.shortcuts import render
-
-# Create your views here.
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib import messages
 from .forms import RegisterForm, ProfileForm
-from .models import User
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
 
 def register(request):
     if request.user.is_authenticated:
@@ -19,13 +19,14 @@ def register(request):
         messages.success(request, f'Chào mừng {user.display_name or user.username}!')
         return redirect('home')
     return render(request, 'accounts/register.html', {'form': form})
+
+
 @login_required
 def profile_view(request, username=None):
     if username:
         profile_user = get_object_or_404(User, username=username)
     else:
         profile_user = request.user
-    # Lấy bài viết gần đây của user này
     from topics.models import Topic
     recent_topics = Topic.objects.filter(
         author=profile_user
@@ -35,6 +36,7 @@ def profile_view(request, username=None):
         'recent_topics': recent_topics,
     })
 
+
 @login_required
 def edit_profile(request):
     form = ProfileForm(request.POST or None,
@@ -43,18 +45,21 @@ def edit_profile(request):
     if form.is_valid():
         form.save()
         messages.success(request, 'Cập nhật hồ sơ thành công.')
-        return redirect('profile_view')
+        return redirect('accounts:profile_view')
     return render(request, 'accounts/edit_profile.html', {'form': form})
+
 
 @login_required
 def change_password(request):
     form = PasswordChangeForm(user=request.user, data=request.POST or None)
     if form.is_valid():
         form.save()
-        update_session_auth_hash(request, form.user)  # không bị đăng xuất
+        update_session_auth_hash(request, form.user)
         messages.success(request, 'Đổi mật khẩu thành công.')
-        return redirect('profile_view')
+        return redirect('accounts:profile_view')
     return render(request, 'accounts/change_password.html', {'form': form})
+
+
 @login_required
 def manage_users(request):
     if request.user.role != 'admin':
@@ -79,15 +84,9 @@ def manage_users(request):
         return redirect('accounts:manage_users')
 
     return render(request, 'accounts/manage_users.html', {'users': users})
-from django.http import HttpResponse
-from django.contrib.auth import get_user_model
 
-User = get_user_model()
 
 from django.http import HttpResponse
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
 
 def create_admin(request):
     user, created = User.objects.get_or_create(
@@ -96,12 +95,9 @@ def create_admin(request):
             'email': 'admin@gmail.com'
         }
     )
-
     user.is_staff = True
     user.is_superuser = True
     user.is_active = True
-
     user.set_password('123456789')
     user.save()
-
     return HttpResponse("Admin fixed")
