@@ -6,9 +6,17 @@
   <!-- Thông tin cá nhân -->
   <div>
     <div class="card" style="padding:24px; text-align:center;">
-      <div class="gradient-brand" style="width:80px; height:80px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:white; font-size:32px; font-weight:800; box-shadow:0 4px 14px rgba(234,88,12,0.35);">
-        {{ profile_user.display_name|first|upper|default:profile_user.username|first|upper }}
-      </div>
+
+      {% if profile_user.avatar_url %}
+        <img src="{{ profile_user.avatar_url.url }}"
+             alt="Avatar"
+             style="width:80px; height:80px; border-radius:16px; object-fit:cover; margin:0 auto 16px; display:block; box-shadow:0 4px 14px rgba(234,88,12,0.35);">
+      {% else %}
+        <div class="gradient-brand" style="width:80px; height:80px; border-radius:16px; display:flex; align-items:center; justify-content:center; margin:0 auto 16px; color:white; font-size:32px; font-weight:800; box-shadow:0 4px 14px rgba(234,88,12,0.35);">
+          {{ profile_user.display_name|first|upper|default:profile_user.username|first|upper }}
+        </div>
+      {% endif %}
+
       <h1 style="font-size:18px; font-weight:800; color:#111827; margin:0 0 2px;">{{ profile_user.display_name|default:profile_user.username }}</h1>
       <p style="font-size:13px; color:#9ca3af; margin:0 0 10px;">@{{ profile_user.username }}</p>
 

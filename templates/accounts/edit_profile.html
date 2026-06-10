@@ -12,18 +12,41 @@
       <div>
         <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Tên hiển thị</label>
         <input type="text" name="display_name" value="{{ form.display_name.value|default:'' }}">
+        {% if form.display_name.errors %}
+          <p style="color:#ef4444; font-size:12px; margin:4px 0 0;">{{ form.display_name.errors|join:", " }}</p>
+        {% endif %}
       </div>
       <div>
         <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Email</label>
         <input type="email" name="email" value="{{ form.email.value|default:'' }}">
+        {% if form.email.errors %}
+          <p style="color:#ef4444; font-size:12px; margin:4px 0 0;">{{ form.email.errors|join:", " }}</p>
+        {% endif %}
       </div>
       <div>
         <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Ảnh đại diện</label>
+
+        <!-- Hiển thị ảnh hiện tại nếu có -->
+        {% if request.user.avatar_url %}
+          <div style="margin-bottom:8px;">
+            <img src="{{ request.user.avatar_url.url }}"
+                 alt="Avatar hiện tại"
+                 style="width:64px; height:64px; border-radius:12px; object-fit:cover; border:2px solid #f3f4f6;">
+            <p style="font-size:11px; color:#9ca3af; margin:4px 0 0;">Ảnh hiện tại — chọn ảnh mới để thay đổi</p>
+          </div>
+        {% endif %}
+
         <input type="file" name="avatar_url" accept="image/*" style="font-size:13px; color:#6b7280;">
+        {% if form.avatar_url.errors %}
+          <p style="color:#ef4444; font-size:12px; margin:4px 0 0;">{{ form.avatar_url.errors|join:", " }}</p>
+        {% endif %}
       </div>
       <div>
         <label style="display:block; font-size:12px; font-weight:600; color:#374151; margin-bottom:4px;">Giới thiệu</label>
         <textarea name="bio" rows="4" placeholder="Viết vài dòng về bạn...">{{ form.bio.value|default:'' }}</textarea>
+        {% if form.bio.errors %}
+          <p style="color:#ef4444; font-size:12px; margin:4px 0 0;">{{ form.bio.errors|join:", " }}</p>
+        {% endif %}
       </div>
       <div style="display:flex; gap:12px;">
         <button type="submit" class="btn-primary" style="flex:1; justify-content:center; padding:10px;">Lưu thay đổi</button>
