@@ -32,11 +32,11 @@
   <div id="post-{{ post.id }}" class="card" style="padding:20px; {% if forloop.first %}border-left:4px solid #ea580c;{% endif %}">
     <div style="display:flex; gap:16px;">
       <div style="flex-shrink:0;">
-  {% if forloop.first %}
-  {% if user == topic.author or user.is_mod_or_admin %}
-  <a href="/topic/edit/{{ topic.id }}/" style="display:flex; align-items:center; gap:4px; font-size:12px; color:#d1d5db; text-decoration:none;" onmouseover="this.style.color='#2563eb';" onmouseout="this.style.color='#d1d5db';">✏ Sửa</a>
-  {% endif %}
-{% endif %}
+        {% if forloop.first %}
+        {% if user == topic.author or user.is_mod_or_admin %}
+        <a href="/topic/edit/{{ topic.id }}/" style="display:flex; align-items:center; gap:4px; font-size:12px; color:#d1d5db; text-decoration:none;" onmouseover="this.style.color='#2563eb';" onmouseout="this.style.color='#d1d5db';">✏ Sửa</a>
+        {% endif %}
+        {% endif %}
         <div class="gradient-brand" style="width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px;">
           {{ post.author.display_name|first|upper|default:post.author.username|first|upper|default:"?" }}
         </div>
@@ -60,13 +60,34 @@
 
         <div style="font-size:14px; color:#374151; line-height:1.7;">{{ post.content|linebreaks }}</div>
 
+        <!-- Hiển thị ảnh/file đính kèm của post -->
+        {% if post.attachments.all %}
+        <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
+          {% for att in post.attachments.all %}
+            {% if att.is_image %}
+              <a href="{{ att.file.url }}" target="_blank">
+                <img src="{{ att.file.url }}" alt="{{ att.file_name }}"
+                     style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #e5e7eb; cursor:zoom-in;">
+              </a>
+            {% else %}
+              <a href="{{ att.file.url }}" target="_blank"
+                 style="display:flex; align-items:center; gap:6px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:8px 12px; font-size:13px; color:#374151; text-decoration:none;"
+                 onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#ea580c';"
+                 onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
+                📄 {{ att.file_name|truncatechars:20 }}
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+
         <div style="display:flex; align-items:center; gap:16px; margin-top:16px; padding-top:12px; border-top:1px solid #f9fafb;">
           <button onclick="toggleVote({{ post.id }}, 'like')" style="display:flex; align-items:center; gap:6px; font-size:13px; color:#6b7280; background:none; border:none; cursor:pointer; font-family:inherit; padding:0;" onmouseover="this.style.color='#16a34a';" onmouseout="this.style.color='#6b7280';">
-          👍<span id="likes-{{ post.id }}">{{ post.like_count }}</span>
+            👍 <span id="likes-{{ post.id }}">{{ post.like_count }}</span>
           </button>
           <button onclick="toggleVote({{ post.id }}, 'dislike')" style="display:flex; align-items:center; gap:6px; font-size:13px; color:#6b7280; background:none; border:none; cursor:pointer; font-family:inherit; padding:0;" onmouseover="this.style.color='#dc2626';" onmouseout="this.style.color='#6b7280';">
-  👎 <span id="dislikes-{{ post.id }}">{{ post.dislike_count }}</span>
-</button>
+            👎 <span id="dislikes-{{ post.id }}">{{ post.dislike_count }}</span>
+          </button>
 
           {% if not topic.is_locked and user.is_authenticated %}
           <button onclick="setReply({{ post.id }}, '{{ post.author.display_name|default:post.author.username }}')" style="display:flex; align-items:center; gap:6px; font-size:13px; color:#6b7280; background:none; border:none; cursor:pointer; font-family:inherit; padding:0;" onmouseover="this.style.color='#ea580c';" onmouseout="this.style.color='#6b7280';">
@@ -102,47 +123,66 @@
 </div>
 {% endif %}
 
-<!-- Nút đăng bài viết mới -->
 {% if not topic.is_locked and user.is_authenticated %}
 <div style="margin-bottom:16px; text-align:right;">
   <button onclick="openNewPost()" class="btn-primary" style="font-size:14px; padding:10px 20px;">✏ Đăng bài viết mới</button>
 </div>
 {% endif %}
 
-<!-- Form đăng bài viết mới (ẩn mặc định) -->
 {% if topic.is_locked %}
 <div class="card" style="padding:16px; text-align:center; font-size:14px; color:#9ca3af; background:#f9fafb;">🔒 Chủ đề này đã bị khóa, không thể đăng bài.</div>
 {% elif user.is_authenticated %}
+
+<!-- Form đăng bài viết mới -->
 <div id="new-post-form" class="card" style="padding:20px; display:none; margin-bottom:16px;">
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <h3 style="font-size:14px; font-weight:700; color:#111827; margin:0;">✏ Đăng bài viết mới</h3>
-    <button onclick="closeNewPost()" style="background:none; border:none; cursor:pointer; font-size:18px; color:#9ca3af;" onmouseover="this.style.color='#374151';" onmouseout="this.style.color='#9ca3af';">✕</button>
+    <button onclick="closeNewPost()" style="background:none; border:none; cursor:pointer; font-size:18px; color:#9ca3af;">✕</button>
   </div>
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="hidden" name="parent_post" value="">
     <textarea name="content" rows="6" placeholder="Viết nội dung bài viết..." required style="margin-bottom:12px;"></textarea>
+    <!-- Upload -->
+    <div style="margin-bottom:12px;">
+      <div id="drop-zone-new" style="border:2px dashed #e5e7eb; border-radius:10px; padding:14px; text-align:center; cursor:pointer;" onclick="document.getElementById('file-input-new').click()">
+        <span style="font-size:20px;">📎</span>
+        <span style="font-size:13px; color:#6b7280; margin-left:6px;">Đính kèm ảnh/file hoặc <span style="color:#ea580c; font-weight:600;">bấm để chọn</span></span>
+      </div>
+      <input type="file" id="file-input-new" name="attachments" multiple accept="image/*,.pdf,.doc,.docx,.zip,.rar,.txt" style="display:none;">
+      <div id="preview-new" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+    </div>
     <button type="submit" class="btn-primary" style="font-size:14px; padding:10px 20px;">Đăng bài</button>
   </form>
 </div>
 
-<!-- Form phản hồi (ẩn mặc định, hiện khi bấm Trả lời) -->
+<!-- Form phản hồi -->
 <div id="reply-form" class="card" style="padding:20px; display:none; margin-bottom:16px;">
   <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
     <h3 style="font-size:14px; font-weight:700; color:#111827; margin:0;">↩ Viết phản hồi</h3>
-    <button onclick="clearReply()" style="background:none; border:none; cursor:pointer; font-size:18px; color:#9ca3af;" onmouseover="this.style.color='#374151';" onmouseout="this.style.color='#9ca3af';">✕</button>
+    <button onclick="clearReply()" style="background:none; border:none; cursor:pointer; font-size:18px; color:#9ca3af;">✕</button>
   </div>
-  <form method="post">
+  <form method="post" enctype="multipart/form-data">
     {% csrf_token %}
-    <div id="reply-indicator" style="align-items:center; gap:8px; background:#fff7ed; border:1px solid #fed7aa; padding:8px 12px; border-radius:8px; font-size:13px; color:#ea580c; margin-bottom:12px;">
+    <div id="reply-indicator" style="display:flex; align-items:center; gap:8px; background:#fff7ed; border:1px solid #fed7aa; padding:8px 12px; border-radius:8px; font-size:13px; color:#ea580c; margin-bottom:12px;">
       ↩ Đang trả lời: <span id="reply-text" style="font-weight:600;"></span>
     </div>
     <input type="hidden" name="parent_post" id="parent_post_input" value="">
     <textarea name="content" id="reply-content" rows="5" placeholder="Viết nội dung phản hồi..." required style="margin-bottom:12px;"></textarea>
+    <!-- Upload -->
+    <div style="margin-bottom:12px;">
+      <div id="drop-zone-reply" style="border:2px dashed #e5e7eb; border-radius:10px; padding:14px; text-align:center; cursor:pointer;" onclick="document.getElementById('file-input-reply').click()">
+        <span style="font-size:20px;">📎</span>
+        <span style="font-size:13px; color:#6b7280; margin-left:6px;">Đính kèm ảnh/file hoặc <span style="color:#ea580c; font-weight:600;">bấm để chọn</span></span>
+      </div>
+      <input type="file" id="file-input-reply" name="attachments" multiple accept="image/*,.pdf,.doc,.docx,.zip,.rar,.txt" style="display:none;">
+      <div id="preview-reply" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+    </div>
     {% if form.content.errors %}<p style="font-size:12px; color:#ef4444; margin-bottom:8px;">{{ form.content.errors.0 }}</p>{% endif %}
     <button type="submit" class="btn-primary" style="font-size:14px; padding:10px 20px;">Gửi phản hồi</button>
   </form>
 </div>
+
 {% else %}
 <div class="card" style="padding:16px; text-align:center; font-size:14px; color:#6b7280;">
   <a href="/accounts/login/" style="color:#ea580c; font-weight:600; text-decoration:none;">Đăng nhập</a> để tham gia thảo luận.
@@ -157,10 +197,7 @@ function toggleVote(postId, type) {
   if (!match) { location.href = '/accounts/login/'; return; }
   fetch(`/interactions/vote/${postId}/`, {
     method: 'POST',
-    headers: {
-      'X-CSRFToken': match[1],
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
+    headers: { 'X-CSRFToken': match[1], 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `vote_type=${type}`
   })
   .then(r => r.json())
@@ -196,5 +233,61 @@ function clearReply() {
   document.getElementById('parent_post_input').value  = '';
   document.getElementById('reply-form').style.display = 'none';
 }
+
+// Preview upload chung
+function setupUpload(inputId, previewId, dropZoneId) {
+  const input    = document.getElementById(inputId);
+  const preview  = document.getElementById(previewId);
+  const dropZone = document.getElementById(dropZoneId);
+  if (!input) return;
+
+  function renderPreview(files) {
+    preview.innerHTML = '';
+    [...files].forEach((f, i) => {
+      const isImage = f.type.startsWith('image/');
+      const box = document.createElement('div');
+      box.style = 'position:relative; border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; width:80px; height:80px; display:flex; align-items:center; justify-content:center; background:#f9fafb;';
+      if (isImage) {
+        const img = document.createElement('img');
+        img.src = URL.createObjectURL(f);
+        img.style = 'width:100%; height:100%; object-fit:cover;';
+        box.appendChild(img);
+      } else {
+        const icon = document.createElement('div');
+        icon.style = 'text-align:center; padding:6px;';
+        icon.innerHTML = `<div style="font-size:20px;">📄</div><div style="font-size:10px; color:#6b7280; word-break:break-all;">${f.name.slice(0,12)}</div>`;
+        box.appendChild(icon);
+      }
+      const del = document.createElement('button');
+      del.type = 'button';
+      del.innerHTML = '✕';
+      del.style = 'position:absolute; top:2px; right:2px; background:rgba(0,0,0,0.5); color:white; border:none; border-radius:50%; width:16px; height:16px; font-size:9px; cursor:pointer;';
+      del.onclick = () => {
+        const dt = new DataTransfer();
+        [...input.files].filter((_, j) => j !== i).forEach(file => dt.items.add(file));
+        input.files = dt.files;
+        renderPreview(input.files);
+      };
+      box.appendChild(del);
+      preview.appendChild(box);
+    });
+  }
+
+  input.addEventListener('change', () => renderPreview(input.files));
+
+  dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#ea580c'; });
+  dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#e5e7eb'; });
+  dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.style.borderColor = '#e5e7eb';
+    const dt = new DataTransfer();
+    [...e.dataTransfer.files].forEach(f => dt.items.add(f));
+    input.files = dt.files;
+    renderPreview(input.files);
+  });
+}
+
+setupUpload('file-input-new',   'preview-new',   'drop-zone-new');
+setupUpload('file-input-reply', 'preview-reply', 'drop-zone-reply');
 </script>
 {% endblock %}

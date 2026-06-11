@@ -1,17 +1,13 @@
 from django.db import models
-
-# Create your models here.
-from django.db import models
 from django.conf import settings
 from forums.models import Forum
+from cloudinary.models import CloudinaryField
 
 class Topic(models.Model):
-    # Bảng 2.5: topic_id, forum_id, user_id, title, content,
-    #            view_count, is_pinned, is_locked, created_at, updated_at
     forum      = models.ForeignKey(Forum, on_delete=models.CASCADE,
                    related_name='topics', verbose_name='Chuyên mục')
     author     = models.ForeignKey(settings.AUTH_USER_MODEL,
-                   on_delete=models.SET_NULL,  # bảng 2.9: SET NULL
+                   on_delete=models.SET_NULL,
                    null=True, related_name='topics',
                    verbose_name='Người tạo')
     title      = models.CharField(max_length=255, verbose_name='Tiêu đề')
@@ -35,24 +31,25 @@ class Topic(models.Model):
 
     def post_count(self):
         return self.posts.filter(is_deleted=False).count()
+
+
 class Post(models.Model):
-    # Bảng 2.6: post_id, topic_id, user_id, parent_post_id,
-    #            content, is_deleted, created_at, updated_at
     topic          = models.ForeignKey(Topic, on_delete=models.CASCADE,
                        related_name='posts', verbose_name='Chủ đề')
     author         = models.ForeignKey(settings.AUTH_USER_MODEL,
-                       on_delete=models.SET_NULL,  # bảng 2.9: SET NULL
+                       on_delete=models.SET_NULL,
                        null=True, related_name='posts',
                        verbose_name='Người đăng')
     parent_post    = models.ForeignKey('self', on_delete=models.SET_NULL,
                        null=True, blank=True,
                        related_name='replies',
-                       verbose_name='Trả lời bài')  # trích dẫn
+                       verbose_name='Trả lời bài')
     content        = models.TextField(verbose_name='Nội dung')
     is_deleted     = models.BooleanField(default=False,
-                       verbose_name='Đã xóa')  # soft delete — bảng 2.6
+                       verbose_name='Đã xóa')
     created_at     = models.DateTimeField(auto_now_add=True)
     updated_at     = models.DateTimeField(auto_now=True, null=True)
+
     class Meta:
         verbose_name        = 'Bài viết'
         verbose_name_plural = 'Bài viết'
@@ -60,3 +57,36 @@ class Post(models.Model):
 
     def __str__(self):
         return f'Post #{self.pk} by {self.author}'
+
+
+class Attachment(models.Model):
+    FILE_TYPE_CHOICES = [
+        ('image', 'Ảnh'),
+        ('file',  'File'),
+    ]
+    topic     = models.ForeignKey(Topic, on_delete=models.CASCADE,
+                  null=True, blank=True,
+                  related_name='attachments', verbose_name='Chủ đề')
+    post      = models.ForeignKey(Post, on_delete=models.CASCADE,
+                  null=True, blank=True,
+                  related_name='attachments', verbose_name='Bài viết')
+    author    = models.ForeignKey(settings.AUTH_USER_MODEL,
+                  on_delete=models.SET_NULL, null=True,
+                  verbose_name='Người đăng')
+    file      = CloudinaryField('file', resource_type='auto',
+                  null=True, blank=True)
+    file_name = models.CharField(max_length=255, blank=True,
+                  verbose_name='Tên file')
+    file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES,
+                  default='file', verbose_name='Loại file')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Tệp đính kèm'
+        verbose_name_plural = 'Tệp đính kèm'
+
+    def __str__(self):
+        return f'{self.file_name} by {self.author}'
+
+    def is_image(self):
+        return self.file_type == 'image'

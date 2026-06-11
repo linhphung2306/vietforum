@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models import Q, Count
 import re
 from forums.models import Forum
-from .models import Topic, Post
+from .models import Topic, Post, Attachment
 from .forms import TopicForm, PostForm
 
 
@@ -47,11 +47,22 @@ def topic_detail(request, topic_id):
             post.author     = request.user
             parent_id       = request.POST.get('parent_post')
             if parent_id:
-                from topics.models import Post as PostModel
-                post.parent_post = PostModel.objects.filter(
+                post.parent_post = Post.objects.filter(
                     id=parent_id, is_deleted=False
                 ).first()
             post.save()
+
+            # Xử lý upload file/ảnh đính kèm cho post
+            for f in request.FILES.getlist('attachments'):
+                file_type = 'image' if f.content_type.startswith('image/') else 'file'
+                Attachment.objects.create(
+                    post=post,
+                    author=request.user,
+                    file=f,
+                    file_name=f.name,
+                    file_type=file_type,
+                )
+
             return redirect('topics:topic_detail', topic_id=topic.id)
 
     return render(request, 'topics/topic_detail.html', {
@@ -71,6 +82,18 @@ def create_topic(request, forum_id):
         topic.forum  = forum
         topic.author = request.user
         topic.save()
+
+        # Xử lý upload file/ảnh đính kèm cho topic
+        for f in request.FILES.getlist('attachments'):
+            file_type = 'image' if f.content_type.startswith('image/') else 'file'
+            Attachment.objects.create(
+                topic=topic,
+                author=request.user,
+                file=f,
+                file_name=f.name,
+                file_type=file_type,
+            )
+
         messages.success(request, 'Tạo chủ đề thành công!')
         return redirect('topics:topic_detail', topic_id=topic.id)
     return render(request, 'topics/create_topic.html', {
@@ -103,6 +126,7 @@ def delete_post(request, post_id):
     post.is_deleted = True
     post.save()
     return redirect('topics:topic_detail', topic_id=post.topic.id)
+
 
 def search(request):
     keyword   = request.GET.get('q', '').strip()
@@ -150,6 +174,8 @@ def search(request):
         'forum_id':  forum_id,
         'total':     paginator.count,
     })
+
+
 @login_required
 def pin_topic(request, topic_id):
     from django.core.exceptions import PermissionDenied
@@ -160,6 +186,8 @@ def pin_topic(request, topic_id):
     topic.save()
     messages.success(request, 'Đã ghim chủ đề.' if topic.is_pinned else 'Đã bỏ ghim.')
     return redirect('topics:forum_detail', forum_id=topic.forum.id)
+
+
 @login_required
 def edit_post(request, post_id):
     from django.core.exceptions import PermissionDenied
