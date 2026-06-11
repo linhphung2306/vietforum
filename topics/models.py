@@ -97,15 +97,13 @@ class Attachment(models.Model):
         if not self.file:
             return ''
         try:
+            # Lấy URL gốc từ Cloudinary (đã có đuôi file đầy đủ)
+            url = self.file.url
             if self.file_type == 'image':
-                return self.file.url
-            # File raw (docx, pdf, zip,...): build URL thủ công
-            # để đảm bảo đúng resource_type=raw và force download
-            public_id  = str(self.file)
-            cloud_name = cloudinary.config().cloud_name
-            return (
-                f"https://res.cloudinary.com/{cloud_name}"
-                f"/raw/upload/fl_attachment/{public_id}"
-            )
+                return url
+            # Đổi http sang https, thêm fl_attachment để force download
+            url = url.replace('http://', 'https://')
+            url = url.replace('/upload/', '/upload/fl_attachment/')
+            return url
         except Exception:
             return ''
