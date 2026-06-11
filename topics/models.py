@@ -2,6 +2,8 @@ from django.db import models
 from django.conf import settings
 from forums.models import Forum
 from cloudinary.models import CloudinaryField
+import cloudinary
+
 
 class Topic(models.Model):
     forum      = models.ForeignKey(Forum, on_delete=models.CASCADE,
@@ -34,21 +36,21 @@ class Topic(models.Model):
 
 
 class Post(models.Model):
-    topic          = models.ForeignKey(Topic, on_delete=models.CASCADE,
-                       related_name='posts', verbose_name='Chủ đề')
-    author         = models.ForeignKey(settings.AUTH_USER_MODEL,
-                       on_delete=models.SET_NULL,
-                       null=True, related_name='posts',
-                       verbose_name='Người đăng')
-    parent_post    = models.ForeignKey('self', on_delete=models.SET_NULL,
-                       null=True, blank=True,
-                       related_name='replies',
-                       verbose_name='Trả lời bài')
-    content        = models.TextField(verbose_name='Nội dung')
-    is_deleted     = models.BooleanField(default=False,
-                       verbose_name='Đã xóa')
-    created_at     = models.DateTimeField(auto_now_add=True)
-    updated_at     = models.DateTimeField(auto_now=True, null=True)
+    topic       = models.ForeignKey(Topic, on_delete=models.CASCADE,
+                    related_name='posts', verbose_name='Chủ đề')
+    author      = models.ForeignKey(settings.AUTH_USER_MODEL,
+                    on_delete=models.SET_NULL,
+                    null=True, related_name='posts',
+                    verbose_name='Người đăng')
+    parent_post = models.ForeignKey('self', on_delete=models.SET_NULL,
+                    null=True, blank=True,
+                    related_name='replies',
+                    verbose_name='Trả lời bài')
+    content     = models.TextField(verbose_name='Nội dung')
+    is_deleted  = models.BooleanField(default=False,
+                    verbose_name='Đã xóa')
+    created_at  = models.DateTimeField(auto_now_add=True)
+    updated_at  = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         verbose_name        = 'Bài viết'
@@ -64,21 +66,21 @@ class Attachment(models.Model):
         ('image', 'Ảnh'),
         ('file',  'File'),
     ]
-    topic     = models.ForeignKey(Topic, on_delete=models.CASCADE,
-                  null=True, blank=True,
-                  related_name='attachments', verbose_name='Chủ đề')
-    post      = models.ForeignKey(Post, on_delete=models.CASCADE,
-                  null=True, blank=True,
-                  related_name='attachments', verbose_name='Bài viết')
-    author    = models.ForeignKey(settings.AUTH_USER_MODEL,
-                  on_delete=models.SET_NULL, null=True,
-                  verbose_name='Người đăng')
-    file      = CloudinaryField('file', resource_type='auto',
-                  null=True, blank=True)
-    file_name = models.CharField(max_length=255, blank=True,
-                  verbose_name='Tên file')
-    file_type = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES,
-                  default='file', verbose_name='Loại file')
+    topic      = models.ForeignKey(Topic, on_delete=models.CASCADE,
+                   null=True, blank=True,
+                   related_name='attachments', verbose_name='Chủ đề')
+    post       = models.ForeignKey(Post, on_delete=models.CASCADE,
+                   null=True, blank=True,
+                   related_name='attachments', verbose_name='Bài viết')
+    author     = models.ForeignKey(settings.AUTH_USER_MODEL,
+                   on_delete=models.SET_NULL, null=True,
+                   verbose_name='Người đăng')
+    file       = CloudinaryField('file', resource_type='auto',
+                   null=True, blank=True)
+    file_name  = models.CharField(max_length=255, blank=True,
+                   verbose_name='Tên file')
+    file_type  = models.CharField(max_length=10, choices=FILE_TYPE_CHOICES,
+                   default='file', verbose_name='Loại file')
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -92,6 +94,18 @@ class Attachment(models.Model):
         return self.file_type == 'image'
 
     def get_download_url(self):
-        if self.file:
-            return self.file.url.replace('/upload/', '/upload/fl_attachment/')
-        return ''
+        if not self.file:
+            return ''
+        try:
+            if self.file_type == 'image':
+                return self.file.url
+            # File raw (docx, pdf, zip,...): build URL thủ công
+            # để đảm bảo đúng resource_type=raw và force download
+            public_id  = str(self.file)
+            cloud_name = cloudinary.config().cloud_name
+            return (
+                f"https://res.cloudinary.com/{cloud_name}"
+                f"/raw/upload/fl_attachment/{public_id}"
+            )
+        except Exception:
+            return ''
