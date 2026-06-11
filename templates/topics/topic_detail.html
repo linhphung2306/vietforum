@@ -38,14 +38,18 @@
         {% endif %}
         {% endif %}
         <div class="gradient-brand" style="width:40px; height:40px; border-radius:10px; display:flex; align-items:center; justify-content:center; color:white; font-weight:700; font-size:14px;">
-          {{ post.author.display_name|first|upper|default:post.author.username|first|upper|default:"?" }}
+          {% if post.author %}{{ post.author.display_name|default:post.author.username|default:"?"|first|upper }}{% else %}?{% endif %}
         </div>
       </div>
       <div style="flex:1; min-width:0;">
         <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:12px;">
           <div style="display:flex; align-items:center; gap:8px;">
-            <a href="/accounts/profile/{{ post.author.username }}/" style="font-weight:600; font-size:14px; color:#111827; text-decoration:none;">{{ post.author.display_name|default:post.author.username|default:"[đã xóa]" }}</a>
+            {% if post.author %}
+            <a href="/accounts/profile/{{ post.author.username }}/" style="font-weight:600; font-size:14px; color:#111827; text-decoration:none;">{{ post.author.display_name|default:post.author.username }}</a>
             {% if post.author.role == 'admin' %}<span class="badge-admin">Admin</span>{% elif post.author.role == 'moderator' %}<span class="badge-mod">Mod</span>{% endif %}
+            {% else %}
+            <span style="font-weight:600; font-size:14px; color:#9ca3af;">[đã xóa]</span>
+            {% endif %}
             {% if forloop.first %}<span style="font-size:11px; background:#fff7ed; color:#ea580c; padding:2px 8px; border-radius:4px; font-weight:600;">Tác giả</span>{% endif %}
           </div>
           <span style="font-size:12px; color:#9ca3af;">{{ post.created_at|date:"d/m/Y H:i" }}</span>
@@ -53,7 +57,7 @@
 
         {% if post.parent_post %}
         <div style="background:#f9fafb; border-left:3px solid #d1d5db; border-radius:0 8px 8px 0; padding:10px 14px; margin-bottom:12px; font-size:13px; color:#6b7280; font-style:italic;">
-          <span style="font-size:11px; font-weight:600; color:#9ca3af; font-style:normal; display:block; margin-bottom:4px;">Trả lời {{ post.parent_post.author.display_name|default:post.parent_post.author.username }}:</span>
+          <span style="font-size:11px; font-weight:600; color:#9ca3af; font-style:normal; display:block; margin-bottom:4px;">Trả lời {% if post.parent_post.author %}{{ post.parent_post.author.display_name|default:post.parent_post.author.username }}{% else %}[đã xóa]{% endif %}:</span>
           {{ post.parent_post.content|truncatechars:120 }}
         </div>
         {% endif %}
@@ -65,8 +69,8 @@
         <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
           {% for att in post.attachments.all %}
             {% if att.is_image %}
-              <a href="{{ att.file.url }}" target="_blank">
-                <img src="{{ att.file.url }}" alt="{{ att.file_name }}"
+              <a href="{{ att.get_image_url }}" target="_blank">
+                <img src="{{ att.get_image_url }}" alt="{{ att.file_name }}"
                      style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #e5e7eb; cursor:zoom-in;">
               </a>
             {% else %}
@@ -90,7 +94,7 @@
           </button>
 
           {% if not topic.is_locked and user.is_authenticated %}
-          <button onclick="setReply({{ post.id }}, '{{ post.author.display_name|default:post.author.username }}')" style="display:flex; align-items:center; gap:6px; font-size:13px; color:#6b7280; background:none; border:none; cursor:pointer; font-family:inherit; padding:0;" onmouseover="this.style.color='#ea580c';" onmouseout="this.style.color='#6b7280';">
+          <button onclick="setReply({{ post.id }}, '{% if post.author %}{{ post.author.display_name|default:post.author.username }}{% else %}[đã xóa]{% endif %}')" style="display:flex; align-items:center; gap:6px; font-size:13px; color:#6b7280; background:none; border:none; cursor:pointer; font-family:inherit; padding:0;" onmouseover="this.style.color='#ea580c';" onmouseout="this.style.color='#6b7280';">
             ↩ Trả lời
           </button>
           {% endif %}

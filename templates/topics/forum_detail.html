@@ -55,7 +55,9 @@
       {% endif %}
     </div>
 
-    <div style="text-align:center; font-size:13px; color:#6b7280;">{{ topic.author.display_name|default:topic.author.username|default:"[đã xóa]" }}</div>
+    <div style="text-align:center; font-size:13px; color:#6b7280;">
+      {% if topic.author %}{{ topic.author.display_name|default:topic.author.username }}{% else %}[đã xóa]{% endif %}
+    </div>
     <div style="text-align:center; font-size:13px; font-weight:600; color:#374151;">{{ topic.view_count }}</div>
     <div style="text-align:center; font-size:12px; color:#9ca3af;">{{ topic.created_at|date:"d/m/Y" }}</div>
 

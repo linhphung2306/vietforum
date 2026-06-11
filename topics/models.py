@@ -9,7 +9,7 @@ class Topic(models.Model):
     forum      = models.ForeignKey(Forum, on_delete=models.CASCADE,
                    related_name='topics', verbose_name='Chuyên mục')
     author     = models.ForeignKey(settings.AUTH_USER_MODEL,
-                   on_delete=models.SET_NULL,
+                   on_delete=models.CASCADE,
                    null=True, related_name='topics',
                    verbose_name='Người tạo')
     title      = models.CharField(max_length=255, verbose_name='Tiêu đề')
@@ -39,7 +39,7 @@ class Post(models.Model):
     topic       = models.ForeignKey(Topic, on_delete=models.CASCADE,
                     related_name='posts', verbose_name='Chủ đề')
     author      = models.ForeignKey(settings.AUTH_USER_MODEL,
-                    on_delete=models.SET_NULL,
+                    on_delete=models.CASCADE,
                     null=True, related_name='posts',
                     verbose_name='Người đăng')
     parent_post = models.ForeignKey('self', on_delete=models.SET_NULL,
@@ -93,17 +93,26 @@ class Attachment(models.Model):
     def is_image(self):
         return self.file_type == 'image'
 
+    def get_image_url(self):
+        if not self.file:
+            return ''
+        try:
+            public_id = self.file.public_id
+            return cloudinary.CloudinaryImage(public_id).build_url(
+                secure=True,
+                resource_type='image',
+            )
+        except Exception:
+            return ''
+
     def get_download_url(self):
         if not self.file:
             return ''
         try:
-            url = self.file.url
-            if self.file_type == 'image':
-                return url
-            # Đổi http sang https
-            url = url.replace('http://', 'https://')
-            # Đổi /auto/upload/ sang /raw/upload/ và thêm fl_attachment
-            url = url.replace('/auto/upload/', '/raw/upload/fl_attachment/')
-            return url
+            public_id = self.file.public_id
+            return cloudinary.CloudinaryRaw(public_id).build_url(
+                secure=True,
+                flags='attachment',
+            )
         except Exception:
             return ''

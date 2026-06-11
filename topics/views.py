@@ -6,6 +6,7 @@ from django.db import models
 from django.db.models import Q, Count
 import re
 import cloudinary.uploader
+import cloudinary
 from forums.models import Forum
 from .models import Topic, Post, Attachment
 from .forms import TopicForm, PostForm
@@ -38,20 +39,21 @@ def _handle_attachments(files, post=None, topic=None, author=None):
             print(f'[ATTACH] uploading lên Cloudinary: {f.name}')
             result = cloudinary.uploader.upload(
                 f,
-                resource_type=resource_type,
+                resource_type=resource_type,  # 'image' hoặc 'raw', KHÔNG dùng 'auto'
                 folder='vietforum/attachments',
                 use_filename=True,
                 unique_filename=True,
             )
             print(f'[ATTACH] Cloudinary OK, public_id: {result["public_id"]}')
-            att = Attachment.objects.create(
-                post      = post,
-                topic     = topic,
-                author    = author,
-                file      = result['public_id'],
-                file_name = f.name,
-                file_type = file_type,
-            )
+
+            att           = Attachment()
+            att.post      = post
+            att.topic     = topic
+            att.author    = author
+            att.file_name = f.name
+            att.file_type = file_type
+            att.file      = result['public_id']
+            att.save()
             print(f'[ATTACH] DB lưu OK, id: {att.id}')
         except Exception as e:
             print(f'[ATTACH] LỖI: {e}')
