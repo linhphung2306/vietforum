@@ -43,7 +43,15 @@
         </a>
       </div>
       {% if user.is_authenticated and user.is_mod_or_admin %}
-      <a href="/topic/pin/{{ topic.id }}/" style="font-size:13px; color:{% if topic.is_pinned %}#ea580c{% else %}#d1d5db{% endif %}; text-decoration:none; flex-shrink:0;" title="{% if topic.is_pinned %}Bỏ ghim{% else %}Ghim{% endif %}">📌</a>
+        {% if topic.is_pinned %}
+        <a href="/topic/pin/{{ topic.id }}/"
+           style="font-size:13px; color:#ea580c; text-decoration:none; flex-shrink:0;"
+           title="Bỏ ghim">📌</a>
+        {% else %}
+        <a href="/topic/pin/{{ topic.id }}/"
+           style="font-size:11px; color:#9ca3af; text-decoration:none; flex-shrink:0; border:1px solid #e5e7eb; border-radius:4px; padding:2px 6px;"
+           title="Ghim">Ghim</a>
+        {% endif %}
       {% endif %}
     </div>
 

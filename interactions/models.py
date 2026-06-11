@@ -19,7 +19,9 @@ class Vote(models.Model):
 
     class Meta:
         verbose_name        = 'Vote'
-        unique_together     = ['post', 'user']  # bảng 2.9: UNIQUE(post_id, user_id)
+        unique_together     = ['post', 'user']  
+    
+    # bảng 2.9: UNIQUE(post_id, user_id)
     
     def __str__(self):
         return f'{self.user} {self.vote_type} post #{self.post_id}'
