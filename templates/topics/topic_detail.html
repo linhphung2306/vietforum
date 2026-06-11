@@ -60,7 +60,7 @@
 
         <div style="font-size:14px; color:#374151; line-height:1.7;">{{ post.content|linebreaks }}</div>
 
-        <!-- Hiển thị ảnh/file đính kèm của post -->
+        <!-- Hiển thị ảnh/file đính kèm -->
         {% if post.attachments.all %}
         <div style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px;">
           {% for att in post.attachments.all %}
@@ -70,7 +70,7 @@
                      style="width:120px; height:120px; object-fit:cover; border-radius:8px; border:1px solid #e5e7eb; cursor:zoom-in;">
               </a>
             {% else %}
-              <a href="{{ att.file.url }}" target="_blank"
+              <a href="{{ att.get_download_url }}" target="_blank" download="{{ att.file_name }}"
                  style="display:flex; align-items:center; gap:6px; background:#f9fafb; border:1px solid #e5e7eb; border-radius:8px; padding:8px 12px; font-size:13px; color:#374151; text-decoration:none;"
                  onmouseover="this.style.background='#fff7ed'; this.style.borderColor='#ea580c';"
                  onmouseout="this.style.background='#f9fafb'; this.style.borderColor='#e5e7eb';">
@@ -143,7 +143,6 @@
     {% csrf_token %}
     <input type="hidden" name="parent_post" value="">
     <textarea name="content" rows="6" placeholder="Viết nội dung bài viết..." required style="margin-bottom:12px;"></textarea>
-    <!-- Upload -->
     <div style="margin-bottom:12px;">
       <div id="drop-zone-new" style="border:2px dashed #e5e7eb; border-radius:10px; padding:14px; text-align:center; cursor:pointer;" onclick="document.getElementById('file-input-new').click()">
         <span style="font-size:20px;">📎</span>
@@ -169,7 +168,6 @@
     </div>
     <input type="hidden" name="parent_post" id="parent_post_input" value="">
     <textarea name="content" id="reply-content" rows="5" placeholder="Viết nội dung phản hồi..." required style="margin-bottom:12px;"></textarea>
-    <!-- Upload -->
     <div style="margin-bottom:12px;">
       <div id="drop-zone-reply" style="border:2px dashed #e5e7eb; border-radius:10px; padding:14px; text-align:center; cursor:pointer;" onclick="document.getElementById('file-input-reply').click()">
         <span style="font-size:20px;">📎</span>
@@ -234,7 +232,6 @@ function clearReply() {
   document.getElementById('reply-form').style.display = 'none';
 }
 
-// Preview upload chung
 function setupUpload(inputId, previewId, dropZoneId) {
   const input    = document.getElementById(inputId);
   const preview  = document.getElementById(previewId);
@@ -274,7 +271,6 @@ function setupUpload(inputId, previewId, dropZoneId) {
   }
 
   input.addEventListener('change', () => renderPreview(input.files));
-
   dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.style.borderColor = '#ea580c'; });
   dropZone.addEventListener('dragleave', () => { dropZone.style.borderColor = '#e5e7eb'; });
   dropZone.addEventListener('drop', e => {

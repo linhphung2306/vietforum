@@ -90,3 +90,8 @@ class Attachment(models.Model):
 
     def is_image(self):
         return self.file_type == 'image'
+
+    def get_download_url(self):
+        if self.file:
+            return self.file.url.replace('/upload/', '/upload/fl_attachment/')
+        return ''
