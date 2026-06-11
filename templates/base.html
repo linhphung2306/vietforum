@@ -56,9 +56,14 @@
         <a href="/moderation/" class="navbar-mod-link">Kiểm duyệt</a>
         {% endif %}
         <a href="/accounts/profile/" class="navbar-user-link">
-          <div class="navbar-avatar gradient-brand">
-            {{ user.display_name|first|upper|default:user.username|first|upper }}
-          </div>
+          {% if user.avatar_url %}
+            <img src="{{ user.avatar_url.url }}"
+                 style="width:32px; height:32px; border-radius:8px; object-fit:cover; flex-shrink:0;">
+          {% else %}
+            <div class="navbar-avatar gradient-brand">
+              {{ user.display_name|first|upper|default:user.username|first|upper }}
+            </div>
+          {% endif %}
           <span>{{ user.display_name|default:user.username }}</span>
         </a>
         <form method="POST" action="/accounts/logout/">
