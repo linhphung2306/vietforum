@@ -21,10 +21,8 @@ def vote(request, post_id):
 
     if existing:
         if existing.vote_type == vote_type:
-            # Bấm lại cùng loại → bỏ vote
             existing.delete()
         else:
-            # Đổi từ like ↔ dislike
             existing.vote_type = vote_type
             existing.save()
     else:
