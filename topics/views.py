@@ -22,9 +22,12 @@ def forum_detail(request, forum_id):
 
 def _handle_attachments(files, post=None, topic=None, author=None):
     """Upload danh sách file lên Cloudinary và lưu vào Attachment."""
+    print(f'[ATTACH] số file nhận được: {len(files)}')
     for f in files:
+        print(f'[ATTACH] đang xử lý: {f.name}, size: {f.size}')
         if f.size > 10 * 1024 * 1024:
-            continue  # bỏ qua file > 10MB
+            print(f'[ATTACH] bỏ qua {f.name}: quá 10MB')
+            continue
 
         ext           = f.name.split('.')[-1].lower()
         is_image      = ext in ['jpg', 'jpeg', 'png', 'gif', 'webp']
@@ -32,6 +35,7 @@ def _handle_attachments(files, post=None, topic=None, author=None):
         file_type     = 'image' if is_image else 'file'
 
         try:
+            print(f'[ATTACH] uploading lên Cloudinary: {f.name}')
             result = cloudinary.uploader.upload(
                 f,
                 resource_type=resource_type,
@@ -39,7 +43,8 @@ def _handle_attachments(files, post=None, topic=None, author=None):
                 use_filename=True,
                 unique_filename=True,
             )
-            Attachment.objects.create(
+            print(f'[ATTACH] Cloudinary OK, public_id: {result["public_id"]}')
+            att = Attachment.objects.create(
                 post      = post,
                 topic     = topic,
                 author    = author,
@@ -47,8 +52,9 @@ def _handle_attachments(files, post=None, topic=None, author=None):
                 file_name = f.name,
                 file_type = file_type,
             )
-        except Exception:
-            pass
+            print(f'[ATTACH] DB lưu OK, id: {att.id}')
+        except Exception as e:
+            print(f'[ATTACH] LỖI: {e}')
 
 
 def topic_detail(request, topic_id):
@@ -85,13 +91,13 @@ def topic_detail(request, topic_id):
                 ).first()
             post.save()
 
-            _handle_attachments(
-                request.FILES.getlist('attachments'),
-                post   = post,
-                author = request.user,
-            )
+            files = request.FILES.getlist('attachments')
+            print(f'[VIEW] POST nhận được {len(files)} file')
+            _handle_attachments(files, post=post, author=request.user)
 
             return redirect('topics:topic_detail', topic_id=topic.id)
+        else:
+            print(f'[VIEW] form không hợp lệ: {form.errors}')
 
     return render(request, 'topics/topic_detail.html', {
         'topic': topic, 'page': page, 'form': form,
@@ -111,11 +117,11 @@ def create_topic(request, forum_id):
         topic.author = request.user
         topic.save()
 
-        _handle_attachments(
-            request.FILES.getlist('attachments'),
-            topic  = topic,
-            author = request.user,
-        )
+        first_post = topic.posts.filter(is_deleted=False).first()
+        if first_post:
+            files = request.FILES.getlist('attachments')
+            print(f'[VIEW] create_topic nhận được {len(files)} file')
+            _handle_attachments(files, post=first_post, topic=topic, author=request.user)
 
         messages.success(request, 'Tạo chủ đề thành công!')
         return redirect('topics:topic_detail', topic_id=topic.id)
