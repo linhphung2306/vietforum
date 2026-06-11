@@ -97,13 +97,13 @@ class Attachment(models.Model):
         if not self.file:
             return ''
         try:
-            # Lấy URL gốc từ Cloudinary (đã có đuôi file đầy đủ)
             url = self.file.url
             if self.file_type == 'image':
                 return url
-            # Đổi http sang https, thêm fl_attachment để force download
+            # Đổi http sang https
             url = url.replace('http://', 'https://')
-            url = url.replace('/upload/', '/upload/fl_attachment/')
+            # Đổi /auto/upload/ sang /raw/upload/ và thêm fl_attachment
+            url = url.replace('/auto/upload/', '/raw/upload/fl_attachment/')
             return url
         except Exception:
             return ''
