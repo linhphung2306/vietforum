@@ -1,20 +1,22 @@
-from django.shortcuts import render
-
-# Create your views here.
 from datetime import timedelta
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.utils import timezone
+from django.db.models import Count
+from django.db.models.functions import TruncDate
 from topics.models import Topic, Post
 from interactions.models import Report
 from accounts.models import User
+from forums.models import Forum
 from .decorators import moderator_required
+from notifications.models import Notification
+
 
 @moderator_required
 def dashboard(request):
     pending_reports = Report.objects.filter(status='pending') \
                             .select_related('post', 'reporter',
-                                          'post__author', 'post__topic')
+                                            'post__author', 'post__topic')
     locked_topics  = Topic.objects.filter(is_locked=True).count()
     seven_days_ago = timezone.now() - timedelta(days=7)
     new_users      = User.objects.filter(date_joined__gte=seven_days_ago).count()
@@ -25,6 +27,8 @@ def dashboard(request):
         'new_users':       new_users,
         'new_topics':      new_topics,
     })
+
+
 @moderator_required
 def handle_report(request, report_id):
     """Xử lý báo cáo vi phạm — cập nhật reviewed_by, resolved_at"""
@@ -38,8 +42,14 @@ def handle_report(request, report_id):
         report.reviewed_by = request.user
         report.resolved_at = timezone.now()
         report.save()
+        Notification.objects.create(
+            recipient=report.reporter,
+            sender=request.user,
+            notif_type='report',
+            topic_id=report.post.topic.id,
+            topic_title=report.post.topic.title,
+        )
         messages.success(request, 'Đã xóa bài vi phạm.')
-        return redirect('moderation:dashboard')
 
     elif action == 'dismiss':
         report.status      = 'dismissed'
@@ -47,16 +57,23 @@ def handle_report(request, report_id):
         report.resolved_at = timezone.now()
         report.save()
         messages.info(request, 'Đã bỏ qua báo cáo.')
-        return redirect('moderation:dashboard')
+
     elif action == 'warn':
         report.status      = 'resolved'
         report.reviewed_by = request.user
         report.resolved_at = timezone.now()
         report.save()
+        Notification.objects.create(
+            recipient=report.reporter,
+            sender=request.user,
+            notif_type='report',
+            topic_id=report.post.topic.id,
+            topic_title=report.post.topic.title,
+        )
         messages.warning(request, f'Đã ghi nhận cảnh báo với {report.post.author.username}.')
-        return redirect('moderation:dashboard')
 
     return redirect('moderation:dashboard')
+
 
 @moderator_required
 def toggle_lock_topic(request, topic_id):
@@ -67,6 +84,8 @@ def toggle_lock_topic(request, topic_id):
     status = 'khóa' if topic.is_locked else 'mở khóa'
     messages.success(request, f'Đã {status} chủ đề.')
     return redirect('topics:topic_detail', topic_id=topic.id)
+
+
 @moderator_required
 def ban_user(request, user_id):
     target = get_object_or_404(User, id=user_id)
@@ -80,20 +99,20 @@ def ban_user(request, user_id):
         messages.success(request, f'Đã {action} tài khoản {target.username}.')
         return redirect('moderation:dashboard')
     return render(request, 'moderation/ban_confirm.html', {'target': target})
+
+
+@moderator_required
 def user_list(request):
     users = User.objects.all().order_by('-date_joined')
     return render(request, 'moderation/user_list.html', {'users': users})
-from django.db.models import Count
-from django.db.models.functions import TruncDate
-from forums.models import Forum
+
 
 @moderator_required
 def report_dashboard(request):
-    today = timezone.now().date()
-    days = int(request.GET.get('days', 7))
+    today      = timezone.now().date()
+    days       = int(request.GET.get('days', 7))
     start_date = today - timedelta(days=days - 1)
 
-   # Bài viết mới theo ngày
     posts_by_day = (
         Post.objects
         .filter(created_at__date__gte=start_date, is_deleted=False)
@@ -103,7 +122,6 @@ def report_dashboard(request):
         .order_by('date')
     )
 
-    # Thành viên mới theo ngày
     members_by_day = (
         User.objects
         .filter(date_joined__date__gte=start_date)
@@ -113,7 +131,6 @@ def report_dashboard(request):
         .order_by('date')
     )
 
-    # Chủ đề theo chuyên mục
     topics_by_forum = (
         Forum.objects
         .annotate(topic_count=Count('topics'))
@@ -121,7 +138,6 @@ def report_dashboard(request):
         .order_by('-topic_count')
     )
 
-    # Top 10 thành viên tích cực (đếm theo Post)
     active_users = (
         User.objects
         .annotate(post_count=Count('posts'))

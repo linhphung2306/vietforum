@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'topics',
     'interactions',
     'moderation',
+    'notifications',
 ]
 
 MIDDLEWARE = [

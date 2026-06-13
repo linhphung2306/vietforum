@@ -55,6 +55,22 @@
         {% if user.is_mod_or_admin %}
         <a href="/moderation/" class="navbar-mod-link">Kiểm duyệt</a>
         {% endif %}
+        <a href="/notifications/" class="navbar-mod-link" style="position:relative;">
+  🔔
+  <span id="notif-badge" style="
+    display:none;
+    position:absolute;
+    top:-6px; right:-8px;
+    background:#e63946;
+    color:white;
+    font-size:10px;
+    font-weight:600;
+    padding:1px 5px;
+    border-radius:99px;
+    min-width:16px;
+    text-align:center;
+  "></span>
+</a>
         <a href="/accounts/profile/" class="navbar-user-link">
           {% if user.avatar_url %}
             <img src="{{ user.avatar_url.url }}"
@@ -108,6 +124,19 @@
     document.getElementById('searchbar').style.display = 'block';
   }
 </script>
+{% if user.is_authenticated %}
+<script>
+  fetch('/notifications/unread-count/')
+    .then(r => r.json())
+    .then(data => {
+      if (data.count > 0) {
+        const badge = document.getElementById('notif-badge');
+        badge.textContent = data.count;
+        badge.style.display = 'inline-block';
+      }
+    });
+</script>
+{% endif %}
 {% block extra_scripts %}{% endblock %}
 </body>
 </html>

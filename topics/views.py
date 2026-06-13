@@ -10,6 +10,7 @@ import cloudinary
 from forums.models import Forum
 from .models import Topic, Post, Attachment
 from .forms import TopicForm, PostForm
+from notifications.models import Notification
 
 
 def forum_detail(request, forum_id):
@@ -92,6 +93,15 @@ def topic_detail(request, topic_id):
                     id=parent_id, is_deleted=False
                 ).first()
             post.save()
+            # Tạo thông báo cho chủ topic nếu người reply khác người
+            if topic.author != request.user:
+                Notification.objects.create(
+                    recipient=topic.author,
+                    sender=request.user,
+                    notif_type='reply',
+                    topic_id=topic.id,
+                    topic_title=topic.title,
+                )
 
             files = request.FILES.getlist('attachments')
             print(f'[VIEW] POST nhận được {len(files)} file')

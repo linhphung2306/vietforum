@@ -6,6 +6,7 @@ from django.views.decorators.http import require_POST
 from topics.models import Post
 from .models import Vote, Report
 from .forms import ReportForm
+from notifications.models import Notification
 
 
 @login_required
@@ -27,9 +28,17 @@ def vote(request, post_id):
             existing.save()
     else:
         Vote.objects.create(post=post, user=request.user, vote_type=vote_type)
+        if post.author != request.user and vote_type == 'like':
+            Notification.objects.create(
+                recipient=post.author,
+                sender=request.user,
+                notif_type='vote',
+                topic_id=post.topic.id,
+                topic_title=post.topic.title,
+            )
 
-    likes    = post.votes.filter(vote_type='like').count()
-    dislikes = post.votes.filter(vote_type='dislike').count()
+    likes    = Vote.objects.filter(post=post, vote_type='like').count()
+    dislikes = Vote.objects.filter(post=post, vote_type='dislike').count()
     return JsonResponse({'likes': likes, 'dislikes': dislikes})
 
 

@@ -28,6 +28,7 @@ urlpatterns = [
     path('',              include('topics.urls')),
     path('interactions/', include('interactions.urls')),
     path('moderation/',   include('moderation.urls')),
+    path('notifications/', include('notifications.urls')),
 ]
 
 # Phục vụ file media khi DEBUG=True
